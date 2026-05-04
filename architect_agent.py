@@ -37,7 +37,7 @@ client = OpenAI(
     api_key=MINIMAX_API_KEY,
     base_url="https://api.minimaxi.chat/v1"
 )
-MODEL = "MiniMax-Text-01"
+MODEL = "MiniMax-M2.7"
 
 # ─── State ──────────────────────────────────────────────────────────────────
 class AgentState(TypedDict):
