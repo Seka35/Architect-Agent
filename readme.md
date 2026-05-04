@@ -88,16 +88,23 @@ input_task
 git clone https://github.com/Seka35/Architect-Agent.git
 cd Architect-Agent
 
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 pip install -r requirements.txt
 ```
 
+### Configuration `.env`
+
+Créez un fichier `.env` dans le dossier du projet — **le script le charge automatiquement**, aucun `export` nécessaire :
+
 ```bash
 cp .env.exemple .env
-export MINIMAX_API_KEY="your_minimax_api_key_here"
+# Éditez .env et renseignez votre clé
+echo "MINIMAX_API_KEY=sk-votre-clé-ici" > .env
 ```
+
+Obtenez votre clé API : [MiniMax API](https://platform.minimax.io/subscribe/token-plan?code=CFCvBqd627)
 
 **requirements.txt**
 
@@ -105,6 +112,7 @@ export MINIMAX_API_KEY="your_minimax_api_key_here"
 openai>=1.0.0
 langgraph>=0.2.0
 langgraph-checkpoint-sqlite>=2.0.0
+python-dotenv>=1.0.0
 ```
 
 ---
@@ -168,6 +176,28 @@ echo '{
 
 ---
 
+## 📄 Exemple de document généré
+
+Voici un exemple réel de document produit par l'agent pour la tâche :
+> *"Créer un jeu Snake version futuriste — HTML/CSS/JS vanilla, esthétique cyberpunk/néon"*
+
+📎 **[Voir le document complet → examples/snake_futuriste.md](examples/snake_futuriste.md)**
+
+Le document généré contient :
+- **Résumé exécutif** — vue d'ensemble en quelques lignes
+- **Architecture visuelle** — diagramme ASCII du pipeline de rendu multi-canvas
+- **Composants détaillés** — GameState, SnakeRenderer, ParticleSystem, AudioSystem, etc.
+- **Stack technologique justifiée** — HTML5 Canvas, Web Audio API, localStorage
+- **Flux de données** — boucle de jeu, input → physics → render
+- **Scalabilité & Performance** — object pool, requestAnimationFrame, devicePixelRatio
+- **Arborescence du projet** — structure de fichiers complète (~20 fichiers JS)
+- **Roadmap en 5 phases** — 10 jours de développement détaillés
+- **Analyse des risques** — tableau probabilité/impact/mitigation
+
+> Score qualité : **87/100** — Status : **PASSED** — 1 itération (mode `quick`)
+
+---
+
 ## 🗂️ State TypedDict
 
 ```python
@@ -220,11 +250,15 @@ class AgentState(TypedDict):
 ## 📁 Structure du projet
 
 ```
-architect-agent-pro/
+Architect-Agent/
 ├── architect_agent.py   # Agent principal
 ├── requirements.txt     # Dépendances Python
 ├── .env.exemple         # Template variables d'environnement
+├── .env                 # Votre clé API (non versionné)
+├── examples/            # Exemples de documents générés
+│   └── snake_futuriste.md
 ├── .gitignore
+├── claude.md            # Instructions pour Claude Code
 └── README.md
 ```
 
