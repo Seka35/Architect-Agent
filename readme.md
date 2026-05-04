@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-orange)
-![MiniMax](https://img.shields.io/badge/MiniMax-Text--01-red)
+![MiniMax](https://img.shields.io/badge/MiniMax-M2.7-red)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 **Système multi-agents de production pour la conception et l'audit automatisé d'architectures techniques.**
@@ -65,7 +65,7 @@ input_task
 
 ## ✨ Caractéristiques techniques
 
-- **LLM : MiniMax-Text-01** — via API OpenAI-compatible (`https://api.minimaxi.chat/v1`)
+- **LLM : MiniMax-M2.7** — via API OpenAI-compatible (`https://api.minimaxi.chat/v1`)
 - **Deux modes** — `full` pour les architectures complexes, `quick` pour les réponses rapides
 - **Persistance SQLite** — `SqliteSaver` sauvegarde chaque état. Reprenez n'importe quelle session avec son `thread_id`
 - **JSON robuste** — Parser 4 étapes (direct → strip backticks → regex `{.*}` → ValueError avec debug)
@@ -95,7 +95,7 @@ pip install -r requirements.txt
 ```
 
 ```bash
-cp .env.example .env
+cp .env.exemple .env
 export MINIMAX_API_KEY="your_minimax_api_key_here"
 ```
 
@@ -223,7 +223,7 @@ class AgentState(TypedDict):
 architect-agent-pro/
 ├── architect_agent.py   # Agent principal
 ├── requirements.txt     # Dépendances Python
-├── .env.example         # Template variables d'environnement
+├── .env.exemple         # Template variables d'environnement
 ├── .gitignore
 └── README.md
 ```
