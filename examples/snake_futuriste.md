@@ -1,33 +1,32 @@
+# TECHNICAL ARCHITECTURE DOCUMENT
 
-# DOCUMENT D'ARCHITECTURE TECHNIQUE
+## SNYKE — Cyberpunk Snake Game
 
-## SNYKE — Jeu Snake Cyberpunk
-
-**Version** : 1.0.0
-**Date** : Janvier 2025
-**Statut** : Finalisé
-
----
-
-## 1. Résumé Exécutif
-
-**SNYKE** est un jeu Snake reimaginé dans un univers cyberpunk/holographique, développé en HTML5/CSS3/JavaScript vanilla (ES6+). Le joueur contrôle un serpent lumineux composed de segments qui laissent une traînée néon, evoluant dans une grille holographique futuriste.
-
-L'application se destine aux navigateurs modernes sur desktop et mobile, avec une interface réactive et des effets visuels de type sci-fi. L'architecture est conçue pour fonctionner sans dépendances externes ni étape de build, tout en offrant des performances fluides à 60 FPS.
-
-**Objectifs qualité** :
-
-- Jouabilité fluide et responsive
-- Esthétique cyberpunk cohérente (néon, glow, scanlines)
-- Sons générés procéduralement (Web Audio API)
-- Persistance locale des scores et paramètres
-- Code modulaire et maintenable
+**Version**: 1.0.0
+**Date**: January 2025
+**Status**: Finalized
 
 ---
 
-## 2. Vue d'Architecture
+## 1. Executive Summary
 
-L'architecture suit un modèle **事件驱动 modulaire** où le `GameLoop` orchestre le flux entre les subsystems. Chaque module expose une API publique minimaliste et communique via un `EventBus` pour le découplage.
+**SNYKE** is a Snake game reimagined in a cyberpunk/holographic universe, developed in vanilla HTML5/CSS3/JavaScript (ES6+). The player controls a glowing snake composed of segments that leave a neon trail, moving within a futuristic holographic grid.
+
+The application is intended for modern desktop and mobile browsers, featuring a responsive interface and sci-fi visual effects. The architecture is designed to function without external dependencies or build steps, while delivering smooth 60 FPS performance.
+
+**Quality Objectives**:
+
+- Fluid and responsive gameplay
+- Consistent cyberpunk aesthetic (neon, glow, scanlines)
+- Procedurally generated sounds (Web Audio API)
+- Local persistence of scores and settings
+- Modular and maintainable code
+
+---
+
+## 2. Architecture Overview
+
+The architecture follows a **modular event-driven** model where the `GameLoop` orchestrates the flow between subsystems. Each module exposes a minimalist public API and communicates via an `EventBus` for decoupling.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -62,97 +61,97 @@ L'architecture suit un modèle **事件驱动 modulaire** où le `GameLoop` orch
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Flux global
+### Global Flow
 
-1. **Initialisation** : `main.js` orchestre l'injection des dépendances et le démarrage
-2. **Boucle de jeu** : `GameLoop` tourne en permanence à 60 FPS via `requestAnimationFrame`
-3. **Tick game logic** : exécuté à intervalle fixe (configurable, défaut 150ms)
-4. **Render** : exécuté à chaque frame pour l'affichage
-5. **UI réactive** : les screens (menu, HUD, game over) se superposent au canvas via des couches CSS
+1. **Initialization**: `main.js` orchestrates dependency injection and startup.
+2. **Game Loop**: `GameLoop` runs continuously at 60 FPS via `requestAnimationFrame`.
+3. **Tick game logic**: Executed at a fixed interval (configurable, default 150ms).
+4. **Render**: Executed every frame for display.
+5. **Responsive UI**: Screens (menu, HUD, game over) overlay the canvas via CSS layers.
 
 ---
 
-## 3. Composants & Responsabilités
+## 3. Components & Responsibilities
 
-### 3.1 — Couche Moteur (`engine/`)
+### 3.1 — Engine Layer (`engine/`)
 
-| Module | Responsabilité | API publique | Dépendances |
+| Module | Responsibility | Public API | Dependencies |
 |--------|---------------|--------------|-------------|
 | `GameLoop` | RAF loop 60 FPS, delta time, tick scheduling, pause/resume | `start()`, `stop()`, `pause()`, `resume()`, `isPaused()` | EventBus |
-| `StateManager` | Machine à états (MENU/PLAYING/PAUSED/GAMEOVER), transitions guardées | `setState(state)`, `getState()`, `onTransition(cb)`, `onEnter(state, cb)` | EventBus |
-| `InputHandler` | Queue directionnelle (max 2 buffered), filtrage anti-180°, touch swipe detection | `getDirection()`, `queueDirection(dir)`, `subscribe(cb)`, `enable()`, `disable()` | Config |
-| `Config` | Toutes constantes centralisées (GRID, SPEED, COLORS) | Membres exposés (`GRID_COLS`, `GRID_ROWS`, `TICK_MS`, `COLORS`) | — |
+| `StateManager` | State machine (MENU/PLAYING/PAUSED/GAMEOVER), guarded transitions | `setState(state)`, `getState()`, `onTransition(cb)`, `onEnter(state, cb)` | EventBus |
+| `InputHandler` | Directional queue (max 2 buffered), anti-180° filtering, touch swipe detection | `getDirection()`, `queueDirection(dir)`, `subscribe(cb)`, `enable()`, `disable()` | Config |
+| `Config` | All centralized constants (GRID, SPEED, COLORS) | Exposed members (`GRID_COLS`, `GRID_ROWS`, `TICK_MS`, `COLORS`) | — |
 
-### 3.2 — Entités de jeu (`entities/`)
+### 3.2 — Game Entities (`entities/`)
 
-| Module | Responsabilité | API publique | État interne |
+| Module | Responsibility | Public API | Internal State |
 |--------|---------------|--------------|--------------|
-| `Snake` | Position segments, direction, croissance, mouvement | `move(dir)`, `grow()`, `getHead()`, `getSegments()`, `reset()` | `segments[]`, `direction`, `growPending` |
-| `Food` | Position, type, effet, respawn aléatoire | `spawn(grid)`, `getPosition()`, `getType()`, `isAt(x, y)` | `position`, `type`, `effect` |
-| `Grid` | Grille logique, collision lookup | `isOccupied(x, y)`, `occupy(x, y)`, `release(x, y)`, `isInBounds(x, y)` | Map `x,y → owner` |
+| `Snake` | Segment positions, direction, growth, movement | `move(dir)`, `grow()`, `getHead()`, `getSegments()`, `reset()` | `segments[]`, `direction`, `growPending` |
+| `Food` | Position, type, effect, random respawn | `spawn(grid)`, `getPosition()`, `getType()`, `isAt(x, y)` | `position`, `type`, `effect` |
+| `Grid` | Logical grid, collision lookup | `isOccupied(x, y)`, `occupy(x, y)`, `release(x, y)`, `isInBounds(x, y)` | Map `x,y → owner` |
 
-### 3.3 — Rendu (`rendering/`)
+### 3.3 — Rendering (`rendering/`)
 
-| Module | Responsabilité | API publique | Coût |
+| Module | Responsibility | Public API | Cost |
 |--------|---------------|--------------|------|
-| `Renderer` | Orchestrateur draw frame, clear, composite final | `render(gameState)`, `init(canvas)`, `resize(w, h)` | — |
-| `GridRenderer` | Lignes holographiques, background | `draw(ctx, time)` | O(GRID) |
-| `SnakeRenderer` | Segments, glow, trail lumineux | `draw(ctx, snake, time)` | O(SNAKE_LENGTH) |
-| `FoodRenderer` | Sprite nourriture, pulse, glow | `draw(ctx, food, time)` | O(1) |
-| `ParticleSystem` | Object pool 500 particules, burst, gravity | `emit(type, pos)`, `update(dt)`, `render(ctx)`, `clear()` | O(POOL_SIZE) |
-| `TrailRenderer` | Traînée dégradée derrière le serpent | Intégré dans SnakeRenderer | — |
-| `GlowRenderer` | Filtres glow via radialGradient | Helpers statiques | — |
+| `Renderer` | Frame draw orchestrator, clear, final composite | `render(gameState)`, `init(canvas)`, `resize(w, h)` | — |
+| `GridRenderer` | Holographic lines, background | `draw(ctx, time)` | O(GRID) |
+| `SnakeRenderer` | Segments, glow, glowing trail | `draw(ctx, snake, time)` | O(SNAKE_LENGTH) |
+| `FoodRenderer` | Food sprite, pulse, glow | `draw(ctx, food, time)` | O(1) |
+| `ParticleSystem` | 500-particle object pool, burst, gravity | `emit(type, pos)`, `update(dt)`, `render(ctx)`, `clear()` | O(POOL_SIZE) |
+| `TrailRenderer` | Gradient trail behind the snake | Integrated in SnakeRenderer | — |
+| `GlowRenderer` | Glow filters via radialGradient | Static helpers | — |
 
 ### 3.4 — Audio (`audio/`)
 
-| Module | Responsabilité | API publique | Technologie |
+| Module | Responsibility | Public API | Technology |
 |--------|---------------|--------------|-------------|
-| `AudioManager` | Contexte Audio, master volume, mute | `init()`, `play(sfxName)`, `setVolume(v)`, `mute()`, `unmute()` | Web Audio API |
-| `SynthEngine` | Oscillateurs configurables, envelopes ADSR | `tone(freq, duration, type)`, `noise(duration)`, `sweep(start, end, dur)` | OscillatorNode |
-| `sfx/*` | Fonctions génératrices de waveforms | `eat()`, `move()`, `die()`, `levelup()`, `gameover()` | OscillatorNode + GainNode |
+| `AudioManager` | Audio Context, master volume, mute | `init()`, `play(sfxName)`, `setVolume(v)`, `mute()`, `unmute()` | Web Audio API |
+| `SynthEngine` | Configurable oscillators, ADSR envelopes | `tone(freq, duration, type)`, `noise(duration)`, `sweep(start, end, dur)` | OscillatorNode |
+| `sfx/*` | Waveform generating functions | `eat()`, `move()`, `die()`, `levelup()`, `gameover()` | OscillatorNode + GainNode |
 
-### 3.5 — Interface utilisateur (`ui/`)
+### 3.5 — User Interface (`ui/`)
 
-| Module | Responsabilité | API publique | Rendu |
+| Module | Responsibility | Public API | Rendering |
 |--------|---------------|--------------|-------|
-| `MenuScreen` | Titre animé, 3 options (Play/Settings/HighScores), navigation | `show()`, `hide()`, `onSelect(cb)` | DOM/CSS |
-| `HUD` | Overlay score, niveau, vitesse, timer | `updateScore(s)`, `updateLevel(l)`, `show()`, `hide()` | DOM overlay |
-| `GameOverScreen` | Score final, high score comparison, restart | `show(score, isHigh)`, `hide()`, `onRestart(cb)` | DOM |
+| `MenuScreen` | Animated title, 3 options (Play/Settings/HighScores), navigation | `show()`, `hide()`, `onSelect(cb)` | DOM/CSS |
+| `HUD` | Overlay for score, level, speed, timer | `updateScore(s)`, `updateLevel(l)`, `show()`, `hide()` | DOM overlay |
+| `GameOverScreen` | Final score, high score comparison, restart | `show(score, isHigh)`, `hide()`, `onRestart(cb)` | DOM |
 | `SettingsModal` | Volume slider, speed select, controls remap | `show()`, `hide()`, `onSave(settings)`, `getSettings()` | DOM/CSS |
 
 ### 3.6 — Services (`services/`)
 
-| Module | Responsabilité | API publique | Persistance |
+| Module | Responsibility | Public API | Persistence |
 |--------|---------------|--------------|-------------|
-| `ScoreService` | Ajout score, multiplier, combo bonus, reset | `add(points)`, `multiply(m)`, `reset()`, `getScore()` | Via StorageService |
-| `LevelService` | Progression level→speed, paliers, bonus life | `addScore(s)`, `getLevel()`, `getSpeed()` | Via StorageService |
-| `StorageService` | Wrapper localStorage, schema validation, defaults | `save(key, data)`, `load(key)`, `clear()` | localStorage |
-| `EventBus` | Pub/sub découplé, namespaces d'événements | `on(event, cb)`, `emit(event, data)`, `off(event, cb)` | — |
+| `ScoreService` | Score addition, multiplier, combo bonus, reset | `add(points)`, `multiply(m)`, `reset()`, `getScore()` | Via StorageService |
+| `LevelService` | Level progression → speed, milestones, bonus life | `addScore(s)`, `getLevel()`, `getSpeed()` | Via StorageService |
+| `StorageService` | localStorage wrapper, schema validation, defaults | `save(key, data)`, `load(key)`, `clear()` | localStorage |
+| `EventBus` | Decoupled pub/sub, event namespaces | `on(event, cb)`, `emit(event, data)`, `off(event, cb)` | — |
 
-### 3.7 — Utilitaires (`utils/`)
+### 3.7 — Utilities (`utils/`)
 
-| Module | Responsabilité | Fonctions |
+| Module | Responsibility | Functions |
 |--------|---------------|-----------|
-| `math.js` | Opérations mathématiques | `clamp(val, min, max)`, `lerp(a, b, t)`, `randInt(min, max)`, `randFloat(min, max)` |
-| `time.js` | Gestion temporelle | `deltaMs(last, now)`, `throttle(fn, ms)`, `debounce(fn, ms)` |
-| `dom.js` | Helpers DOM | `$qs(selector)`, `$qsa(selector)`, `createEl(tag, attrs)`, `removeEl(el)` |
+| `math.js` | Mathematical operations | `clamp(val, min, max)`, `lerp(a, b, t)`, `randInt(min, max)`, `randFloat(min, max)` |
+| `time.js` | Time management | `deltaMs(last, now)`, `throttle(fn, ms)`, `debounce(fn, ms)` |
+| `dom.js` | DOM helpers | `$qs(selector)`, `$qsa(selector)`, `createEl(tag, attrs)`, `removeEl(el)` |
 
 ---
 
-## 4. Stack Technologique
+## 4. Technology Stack
 
-| Catégorie | Choix | Version | Justification |
+| Category | Choice | Version | Justification |
 |-----------|-------|---------|---------------|
-| **Langage** | JavaScript ES6+ | ES2022 | Modules natifs, optional chaining, nullish coalescing |
-| **Style** | CSS3 | — | Variables CSS, grid, flexbox, backdrop-filter, animations |
-| **Graphisme** | Canvas 2D API | — | Performances 2D excellentes, pas de WebGL overhead |
-| **Audio** | Web Audio API | — | Synthèse procédurale, pas de fichiers audio à charger |
-| **Persistance** | localStorage | — | Quota ~5 MB, pas de backend, JSON natif |
-| **Module system** | ES Modules | — | Pas de bundler obligatoire, import/export natif |
-| **Fonts** | Google Fonts Orbitron | — | Typographie futuriste, lazy load |
-| **Build** | Aucun (vanilla) | — | Zéro dépendances, fichier unique exécutable |
+| **Language** | JavaScript ES6+ | ES2022 | Native modules, optional chaining, nullish coalescing |
+| **Style** | CSS3 | — | CSS variables, grid, flexbox, backdrop-filter, animations |
+| **Graphics** | Canvas 2D API | — | Excellent 2D performance, no WebGL overhead |
+| **Audio** | Web Audio API | — | Procedural synthesis, no audio files to load |
+| **Persistence** | localStorage | — | ~5 MB quota, no backend, native JSON |
+| **Module system** | ES Modules | — | No mandatory bundler, native import/export |
+| **Fonts** | Google Fonts Orbitron | — | Futuristic typography, lazy load |
+| **Build** | None (vanilla) | — | Zero dependencies, single executable file |
 
-### Compatibilité navigateur cible
+### Target Browser Compatibility
 
 - Chrome 80+
 - Firefox 75+
@@ -160,57 +159,57 @@ L'architecture suit un modèle **事件驱动 modulaire** où le `GameLoop` orch
 - Edge 80+
 - Mobile Chrome / Safari
 
-> ⚠️ **Note** : Les navigateurs doivent supporter ES Modules (`<script type="module">`) et Web Audio API. Fallback gracieux (mute + message) si non disponible.
+> ⚠️ **Note**: Browsers must support ES Modules (`<script type="module">`) and Web Audio API. Graceful fallback (mute + message) if unavailable.
 
 ---
 
-## 5. Flux de Données
+## 5. Data Flows
 
-### 5.1 — Flux principal (boucle de jeu)
+### 5.1 — Main Flow (Game Loop)
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                    GAME LOOP — 60 FPS                            │
 │                   (requestAnimationFrame)                        │
 └──────────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐   ┌──────────┐   ┌──────────┐
-        │  INPUT   │   │  TICK    │   │  RENDER  │
-        │  READ    │   │  LOGIC   │   │  FRAME   │
-        └──────────┘   └──────────┘   └──────────┘
-              │               │               │
-              ▼               ▼               ▼
-        DirectionQueue   GameState       Canvas API
-        validée (anti-   mis à jour      draw calls
-        180°) pour le    (Snake, Food,   (Grid, Snake,
-        prochain tick     Score, Level)   Food, Particles)
-                                │
-                                ▼
-                    EventBus.emit() pour les
-                    events cross-composants
+                               │
+               ┌───────────────┼───────────────┐
+               ▼               ▼               ▼
+         ┌──────────┐   ┌──────────┐   ┌──────────┐
+         │  INPUT   │   │  TICK    │   │  RENDER  │
+         │  READ    │   │  LOGIC   │   │  FRAME   │
+         └──────────┘   └──────────┘   └──────────┘
+               │               │               │
+               ▼               ▼               ▼
+         DirectionQueue   GameState       Canvas API
+         validated (anti- updated         draw calls
+         180°) for next  (Snake, Food,    (Grid, Snake,
+         tick            Score, Level)    Food, Particles)
+                                 │
+                                 ▼
+                     EventBus.emit() for
+                     cross-component events
 ```
 
-### 5.2 — Flux des événements
+### 5.2 — Event Flow
 
 ```
 EVENT BUS CHANNELS
 ════════════════════════════════════════════════════════════════════
 
-  CHANNEL              EMITTEUR          LISTENERS
+  CHANNEL              EMITTER           LISTENERS
   ───────────────────────────────────────────────────────────────
   food.eaten           Snake/Food        ParticleSystem, ScoreService,
-                                       AudioManager, HUD
+                                        AudioManager, HUD
 
   level.up             LevelService     AudioManager, HUD, Renderer
-                                       (speed increase visual)
+                                        (speed increase visual)
 
   game.over            Snake             GameOverScreen, ScoreService,
-                                       AudioManager, StorageService
+                                        AudioManager, StorageService
 
   game.start           StateManager     ParticleSystem (reset),
-                                       AudioManager, HUD
+                                        AudioManager, HUD
 
   pause.toggle         InputHandler      GameLoop, HUD
 
@@ -219,7 +218,7 @@ EVENT BUS CHANNELS
   highscore.new        StorageService    GameOverScreen (highlight)
 ```
 
-### 5.3 — Flux de collision
+### 5.3 — Collision Flow
 
 ```
 Input Direction
@@ -230,9 +229,9 @@ Input Direction
       ▼
  Snake.move(direction)
       │
-      ├─▶ Grid.isInBounds(head) ──────▶ GAME OVER (mur)
+      ├─▶ Grid.isInBounds(head) ──────▶ GAME OVER (Wall)
       │
-      ├─▶ Snake.checkSelfCollision() ─▶ GAME OVER (self)
+      ├─▶ Snake.checkSelfCollision() ─▶ GAME OVER (Self)
       │
       └─▶ Grid.isOccupied(head) ──────▶ FOOD EATEN
              │                            │
@@ -242,10 +241,10 @@ Input Direction
              │                            ├─▶ AudioManager.play('eat')
              │                            └─▶ LevelService.check()
              │
-             └─▶ Snake.grow() (si food)
+             └─▶ Snake.grow() (if food)
 ```
 
-### 5.4 — Flux de rendu
+### 5.4 — Rendering Flow
 
 ```
 requestAnimationFrame(timestamp)
@@ -256,45 +255,45 @@ requestAnimationFrame(timestamp)
       ├─▶ ctx.clearRect(0, 0, w, h)
       │
       ├─▶ GridRenderer.drawGrid(ctx, time)
-      │       (lignes holographiques alpha 0.15)
+      │       (holographic lines alpha 0.15)
       │
       ├─▶ SnakeRenderer.drawSnake(ctx, snake, time)
-      │       ├─ TrailRenderer (globalAlpha dégradé)
-      │       └─ GlowRenderer (radialGradient sur head)
+      │       ├─ TrailRenderer (gradient globalAlpha)
+      │       └─ GlowRenderer (radialGradient on head)
       │
       ├─▶ FoodRenderer.drawFood(ctx, food, time)
       │       (pulse: sin(time) * scale)
       │
       ├─▶ ParticleSystem.render(ctx)
-      │       (particules actives uniquement)
+      │       (active particles only)
       │
       └─▶ HUD.updateDOM()
-              (DOM update, pas de canvas)
+              (DOM update, no canvas)
 ```
 
 ---
 
-## 6. Sécurité
+## 6. Security
 
-### 6.1 — Modèle de menaces
+### 6.1 — Threat Model
 
-| Menace | Probabilité | Impact | Mitigation appliquée |
+| Threat | Probability | Impact | Applied Mitigation |
 |--------|-------------|--------|----------------------|
-| XSS via localStorage | Faible | Moyen | Clés whitelistées, parse try/catch avec defaults |
-| Modification scores côté client | Moyenne | Négligeable | Scores solo only, pas de serveur |
-| canvas manipulation | Très faible | Négligeable | Canvas isolé, pas d'iframe cross-origin |
-| CSS injection | Négligeable | Faible | Styles en fichier CSS, pas d'injection dynamic |
-| Audio autoplay bloqué | Haute | Faible | `AudioContext.resume()` au premier user gesture |
+| XSS via localStorage | Low | Medium | Whitelisted keys, parse try/catch with defaults |
+| Client-side score modification | Medium | Negligible | Single-player only, no server |
+| Canvas manipulation | Very low | Negligible | Isolated canvas, no cross-origin iframe |
+| CSS injection | Negligible | Low | Styles in CSS file, no dynamic injection |
+| Audio autoplay blocked | High | Low | `AudioContext.resume()` on first user gesture |
 
-### 6.2 — Politiques de sécurité appliquées
+### 6.2 — Security Policies Applied
 
 ```html
-<!-- Content Security Policy (optionnel, peut être activé) -->
+<!-- Content Security Policy (Optional, can be enabled) -->
 <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;"> -->
 
-<!-- Audio : pas d'autoplay -->
+<!-- Audio: No autoplay -->
 <script>
-  // AudioContext créé au premier user interaction uniquement
+  // AudioContext created only on first user interaction
   document.addEventListener('click', () => {
     if (audioCtx && audioCtx.state === 'suspended') {
       audioCtx.resume();
@@ -303,18 +302,18 @@ requestAnimationFrame(timestamp)
 </script>
 ```
 
-### 6.3 — Validation des données
+### 6.3 — Data Validation
 
 ```javascript
-// Schema validation pour localStorage
+// Schema validation for localStorage
 const SCORE_SCHEMA = {
   version: 1,
-  scores: Array,  // max 10 entrées, triées descendantes
+  scores: Array,  // max 10 entries, sorted descending
   settings: { volume: Number, speed: String, controls: String },
   stats: { gamesPlayed: Number, totalScore: Number, playTimeSeconds: Number }
 };
 
-// Validation au chargement
+// Validation on load
 function loadScores() {
   try {
     const raw = localStorage.getItem('snyke_highscores');
@@ -327,35 +326,35 @@ function loadScores() {
 }
 ```
 
-### 6.4 — Event handling sécurisé
+### 6.4 — Secure Event Handling
 
 ```javascript
-// Delegation sur élément connu uniquement
+// Delegation only on known element
 const container = document.getElementById('game-container');
 container.addEventListener('keydown', handleKeyDown);
 
-// Pas d'event listener dynamique sur window/document
-// Sauf pour les shortcuts globaux (Escape = pause)
+// No dynamic event listeners on window/document
+// Except for global shortcuts (Escape = pause)
 ```
 
 ---
 
-## 7. Scalabilité & Performance
+## 7. Scalability & Performance
 
-### 7.1 — Métriques de performance
+### 7.1 — Performance Metrics
 
-| Métrique | Cible | Seuil critique | Stratégie |
+| Metric | Target | Critical Threshold | Strategy |
 |----------|-------|----------------|-----------|
 | FPS | 60 | < 50 | Reduce particles, skip frame |
-| Latence input | < 16ms | > 50ms | RAF scheduling, no heavy work in input handler |
-| Tick time | < 5ms | > 20ms | Algorithmes O(1) pour collision |
+| Input Latency | < 16ms | > 50ms | RAF scheduling, no heavy work in input handler |
+| Tick time | < 5ms | > 20ms | O(1) algorithms for collision |
 | Memory | < 30 MB | > 50 MB | Object pool, cleanup on game over |
 | Bundle size | < 100 KB | — | ES modules, lazy loading screens |
 | localStorage I/O | < 10ms | > 100ms | Batch writes, debounce saves |
 
-### 7.2 — Optimisations implémentées
+### 7.2 — Implemented Optimizations
 
-**Object Pooling (particules)**
+**Object Pooling (particles)**
 ```javascript
 class ParticlePool {
   constructor(size = 500) {
@@ -376,23 +375,23 @@ class ParticlePool {
     particle.active = false;
     this.active.delete(particle);
   }
-  // Réutilisation, pas de new/GC
+  // Reuse, no new/GC
 }
 ```
 
-**Collision O(1) via Grid Map**
+**O(1) Collision via Grid Map**
 ```javascript
-// Grid.isOccupied(x, y) — Map lookup au lieu de array scan
+// Grid.isOccupied(x, y) — Map lookup instead of array scan
 this.grid = new Map();
-// Clé: "x,y" → valeur: "snake" | "food"
+// Key: "x,y" → value: "snake" | "food"
 isOccupied(x, y) {
   return this.grid.has(`${x},${y}`);
 }
 ```
 
-**Dirty checking (Snake segments)**
+**Dirty Checking (Snake segments)**
 ```javascript
-// Ne redessine que si l'état a changé
+// Only redraw if state changed
 let lastRenderState = null;
 function render(state) {
   if (JSON.stringify(state) === lastRenderState) return;
@@ -406,50 +405,50 @@ function render(state) {
 const MAX_PARTICLES = window.innerWidth < 768 ? 200 : 500;
 ```
 
-### 7.3 — Responsive design
+### 7.3 — Responsive Design
 
 | Viewport | Canvas | Grid | Particles | Touch |
 |----------|--------|------|-----------|-------|
-| ≥ 1024px | 800×500 | 40×25 | 500 | Non |
-| 768–1023px | 640×400 | 32×20 | 300 | Non |
-| < 768px | 100vw–20px | 24×15 | 200 | Oui (swipe) |
+| ≥ 1024px | 800×500 | 40×25 | 500 | No |
+| 768–1023px | 640×400 | 32×20 | 300 | No |
+| < 768px | 100vw–20px | 24×15 | 200 | Yes (swipe) |
 
-### 7.4 — Extensibilité future
+### 7.4 — Future Extensibility
 
 ```
-AJOUTS POSSIBLES SANS REFONTE
-═══════════════════════════════
+POSSIBLE ADDITIONS WITHOUT REFACTOR
+═══════════════════════════════════
 
 Power-ups:
   ├── Module: PowerUp.js
-  ├── Rendu: PowerUpRenderer.js
+  ├── Rendering: PowerUpRenderer.js
   ├── Service: PowerUpService.js
   └── EventBus: powerup.spawn, powerup.collect
 
-Multiplayer local:
-  ├── Module: Snake2.js (2e serpent)
+Local Multiplayer:
+  ├── Module: Snake2.js (2nd snake)
   ├── InputHandler: dual queue
   └── Renderer: multi-snake
 
-Multiplayer online:
+Online Multiplayer:
   ├── Module: NetworkManager.js (WebSocket)
   ├── API: sync state every tick
   └── Conflict resolution: server authority
 
 Themes:
   ├── css/variables-themes.css
-  ├── Constantes: Config.THEME
+  ├── Constants: Config.THEME
   └── Loader: ThemeManager.load(themeName)
 ```
 
 ---
 
-## 8. Structure du Projet
+## 8. Project Structure
 
 ```
 snyke/
 │
-├── index.html                    # Point d'entrée unique
+├── index.html                    # Single entry point
 │   ├── <meta> tags (viewport, description)
 │   ├── Google Fonts (Orbitron)
 │   ├── <link> styles.css
@@ -457,10 +456,10 @@ snyke/
 │
 ├── css/
 │   │
-│   ├── main.css                 # Reset, variables CSS, layout global
-│   │   ├── /* Variables : --color-primary, --glow-intensity, etc. */
-│   │   ├── /* Reset : box-sizing, margin 0 */
-│   │   └── /* Layout : #game-container, layers */
+│   ├── main.css                 # Reset, CSS variables, global layout
+│   │   ├── /* Variables: --color-primary, --glow-intensity, etc. */
+│   │   ├── /* Reset: box-sizing, margin 0 */
+│   │   └── /* Layout: #game-container, layers */
 │   │
 │   ├── components/
 │   │   ├── menu.css              # .menu-screen, .menu-title, .menu-options
@@ -470,7 +469,7 @@ snyke/
 │   │
 │   └── effects/
 │       ├── scanlines.css         # .scanlines-overlay (::after pseudo)
-│       ├── glow.css              # .neon-glow, .text-glow (fallback CSS)
+│       ├── glow.css              # .neon-glow, .text-glow (CSS fallback)
 │       └── transitions.css       # .fade-in, .slide-up (animations)
 │
 ├── js/
@@ -481,7 +480,7 @@ snyke/
 │   │   ├── GameLoop.js           # RAF loop, tick scheduling, pause/resume
 │   │   ├── StateManager.js       # FSM: MENU → PLAYING → PAUSED/GAMEOVER
 │   │   ├── InputHandler.js       # Keyboard + Touch, direction queue
-│   │   └── Config.js             # Constantes: GRID_SIZE, SPEED, COLORS, AUDIO
+│   │   └── Config.js             # Constants: GRID_SIZE, SPEED, COLORS, AUDIO
 │   │
 │   ├── entities/
 │   │   ├── Snake.js              # Segments[], move(), grow(), collision()
@@ -489,11 +488,11 @@ snyke/
 │   │   └── Grid.js               # Grid Map, isOccupied(), isInBounds()
 │   │
 │   ├── rendering/
-│   │   ├── Renderer.js           # Orchestrateur: clear → draw → composite
-│   │   ├── GridRenderer.js       # Lignes holographiques
+│   │   ├── Renderer.js           # Orchestrator: clear → draw → composite
+│   │   ├── GridRenderer.js       # Holographic lines
 │   │   ├── SnakeRenderer.js      # Segments + trail + glow
 │   │   ├── FoodRenderer.js       # Pulse + glow
-│   │   ├── ParticleSystem.js     # Object pool 500, emit(), update(), render()
+│   │   ├── ParticleSystem.js     # 500-particle object pool, emit(), update(), render()
 │   │   └── effects/
 │   │       ├── GlowRenderer.js   # radialGradient helpers
 │   │       └── TrailRenderer.js  # alpha gradient trail
@@ -526,16 +525,16 @@ snyke/
 │       └── dom.js               # $qs(), $qsa(), createEl(), removeEl()
 │
 ├── assets/
-│   ├── fonts/                   # (optionnel) Orbitron .woff2 local
+│   ├── fonts/                   # (Optional) Local Orbitron .woff2
 │   └── icons/
-│       └── favicon.svg          # Icône snake futuriste
+│       └── favicon.svg          # Futuristic snake icon
 │
-├── SPEC.md                      # Spécification fonctionnelle détaillée
-├── CHANGELOG.md                # Historique des versions
-└── README.md                   # Guide d'installation / développement
+├── SPEC.md                      # Detailed functional specification
+├── CHANGELOG.md                # Version history
+└── README.md                   # Installation / Development guide
 ```
 
-### Arbre des imports
+### Import Tree
 
 ```
 main.js
@@ -583,183 +582,183 @@ main.js
 
 ---
 
-## 9. Roadmap d'Implémentation
+## 9. Implementation Roadmap
 
-### Sprint 1 — Core Engine (Jours 1-2)
+### Sprint 1 — Core Engine (Days 1-2)
 
-**Objectif** : Prototype fonctionnel minimal jouable
+**Objective**: Minimal functional playable prototype
 
-| Tâche | Description | Critère de succès |
+| Task | Description | Success Criteria |
 |-------|-------------|-------------------|
-| 1.1 | Setup projet + index.html + CSS global | Fichier unique exécutable |
-| 1.2 | GameLoop + Config | `requestAnimationFrame` tourne, pause fonctionnelle |
-| 1.3 | StateManager | FSM transitions correctes (MENU→PLAYING→GAMEOVER) |
-| 1.4 | Grid + Snake basique | Serpent bouge, ne sort pas des murs (ou wrap) |
-| 1.5 | Food spawn + collision eat | Score augmente, serpent grandit |
-| 1.6 | InputHandler (keyboard) | Flèches directionnelles fonctionnelles |
-| 1.7 | HUD basique | Score affiché en overlay |
+| 1.1 | Project setup + index.html + global CSS | Single executable file |
+| 1.2 | GameLoop + Config | `requestAnimationFrame` runs, pause working |
+| 1.3 | StateManager | Correct FSM transitions (MENU→PLAYING→GAMEOVER) |
+| 1.4 | Grid + basic Snake | Snake moves, does not exit walls (or wraps) |
+| 1.5 | Food spawn + eat collision | Score increases, snake grows |
+| 1.6 | InputHandler (keyboard) | Arrow keys functional |
+| 1.7 | Basic HUD | Score displayed in overlay |
 
-**Deliverable** : `index.html` jouable avec score qui augmente
+**Deliverable**: Playable `index.html` with increasing score
 
-### Sprint 2 — Rendering (Jours 3-4)
+### Sprint 2 — Rendering (Days 3-4)
 
-**Objectif** : Visuel cyberpunk complet sur Canvas
+**Objective**: Full cyberpunk visual on Canvas
 
-| Tâche | Description | Critère de succès |
+| Task | Description | Success Criteria |
 |-------|-------------|-------------------|
-| 2.1 | GridRenderer | Lignes holographiques visibles (alpha 0.15) |
-| 2.2 | SnakeRenderer | Segments + glow tête + trail |
+| 2.1 | GridRenderer | Holographic lines visible (alpha 0.15) |
+| 2.2 | SnakeRenderer | Segments + head glow + trail |
 | 2.3 | FoodRenderer | Pulse animation + glow |
-| 2.4 | ParticleSystem | Burst au makan food (pool 500) |
-| 2.5 | Responsive canvas | Resize handler fonctionnel |
-| 2.6 | Scanlines effect | Overlay CSS scanlines |
+| 2.4 | ParticleSystem | Burst on eating food (pool 500) |
+| 2.5 | Responsive canvas | Working resize handler |
+| 2.6 | Scanlines effect | CSS scanlines overlay |
 
-**Deliverable** : Canvas rendu avec tous les effets visuels
+**Deliverable**: Canvas rendered with all visual effects
 
-### Sprint 3 — Audio & Effects (Jours 5-6)
+### Sprint 3 — Audio & Effects (Days 5-6)
 
-**Objectif** : Feedback audio complet + polish effets
+**Objective**: Full audio feedback + effect polish
 
-| Tâche | Description | Critère de succès |
+| Task | Description | Success Criteria |
 |-------|-------------|-------------------|
-| 3.1 | AudioManager init | AudioContext créé au premier click |
-| 3.2 | SFX eat/move/die/levelup | Sons procéduraux jouables |
-| 3.3 | Screen shake | Shake sur collision (mur ou self) |
-| 3.4 | Screen flash | Flash blanc sur makan food |
-| 3.5 | LevelService | Vitesse augmente à chaque palier |
-| 3.6 | Speed scaling | TICK_MS diminue de 10% par level |
+| 3.1 | AudioManager init | AudioContext created on first click |
+| 3.2 | SFX eat/move/die/levelup | Playable procedural sounds |
+| 3.3 | Screen shake | Shake on collision (wall or self) |
+| 3.4 | Screen flash | White flash on eating food |
+| 3.5 | LevelService | Speed increases at each milestone |
+| 3.6 | Speed scaling | TICK_MS decreases by 10% per level |
 
-**Deliverable** : Feedback audio-visuel complet
+**Deliverable**: Full audio-visual feedback
 
-### Sprint 4 — UI & Polish (Jours 7-8)
+### Sprint 4 — UI & Polish (Days 7-8)
 
-**Objectif** : UI complète + mobile + scores
+**Objective**: Full UI + mobile + scores
 
-| Tâche | Description | Critère de succès |
+| Task | Description | Success Criteria |
 |-------|-------------|-------------------|
-| 4.1 | MenuScreen | Titre animé + 3 options + navigation |
-| 4.2 | GameOverScreen | Score final + high score + restart |
+| 4.1 | MenuScreen | Animated title + 3 options + navigation |
+| 4.2 | GameOverScreen | Final score + high score + restart |
 | 4.3 | SettingsModal | Volume slider + speed select |
-| 4.4 | Touch controls | Swipe detection pour mobile |
-| 4.5 | High scores localStorage | Sauvegarde/chargement fonctionnel |
+| 4.4 | Touch controls | Swipe detection for mobile |
+| 4.5 | localStorage high scores | Working save/load |
 | 4.6 | Stats tracking | gamesPlayed, playTime, totalScore |
-| 4.7 | Performance audit | 60 FPS stable, memory < 30MB |
+| 4.7 | Performance audit | Stable 60 FPS, memory < 30MB |
 
-**Deliverable** : Version production-ready
+**Deliverable**: Production-ready version
 
-### Estimation effort total
+### Total Effort Estimate
 
-| Phase | Complexité | Temps estimé |
+| Phase | Complexity | Estimated Time |
 |-------|------------|--------------|
-| Sprint 1 | ★★☆ | ~6 heures |
-| Sprint 2 | ★★★ | ~8 heures |
-| Sprint 3 | ★★☆ | ~5 heures |
-| Sprint 4 | ★★☆ | ~6 heures |
-| **Total** | | **~25 heures** |
+| Sprint 1 | ★★☆ | ~6 hours |
+| Sprint 2 | ★★★ | ~8 hours |
+| Sprint 3 | ★★☆ | ~5 hours |
+| Sprint 4 | ★★☆ | ~6 hours |
+| **Total** | | **~25 hours** |
 
 ---
 
-## 10. Points d'Attention & Risques
+## 10. Attention Points & Risks
 
-### 10.1 — Risques identifiés
+### 10.1 — Identified Risks
 
-| ID | Risque | Probabilité | Impact | Mitigation |
+| ID | Risk | Probability | Impact | Mitigation |
 |----|--------|-------------|--------|------------|
-| R1 | **Canvas performance mobile** | Moyenne | Moyen | Particle pool réduit sur mobile (200), dirty checking |
-| R2 | **Audio autoplay browsers** | Haute | Faible | `AudioContext.resume()` au premier click, fallback mute automatique |
-| R3 | **localStorage quota exceeded** | Basse | Moyen | Validation avant écriture, cleanup des vieux scores |
-| R4 | **Memory leak long sessions** | Moyenne | Moyen | Object pool reset au game over, pas de listeners orphelins |
-| R5 | **Input lag high scores** | Basse | Faible | Direction queue bufferisé, anti-180° déjà implémenté |
-| R6 | **Touch controls confusion** | Moyenne | Moyen | Instructions visuelles sur mobile, feedback tactile |
-| R7 | **Cross-origin fonts blocked** | Basse | Faible | Fallback système si Google Fonts unreachable |
+| R1 | **Mobile Canvas performance** | Medium | Medium | Reduced particle pool on mobile (200), dirty checking |
+| R2 | **Browsers audio autoplay** | High | Low | `AudioContext.resume()` on first click, automatic mute fallback |
+| R3 | **localStorage quota exceeded** | Low | Medium | Validation before writing, cleanup of old scores |
+| R4 | **Long session memory leak** | Medium | Medium | Object pool reset at game over, no orphaned listeners |
+| R5 | **High scores input lag** | Low | Low | Buffered direction queue, anti-180° already implemented |
+| R6 | **Touch controls confusion** | Medium | Medium | Visual instructions on mobile, haptic feedback |
+| R7 | **Cross-origin fonts blocked** | Low | Low | System fallback if Google Fonts unreachable |
 
-### 10.2 — Points de vigilance développement
+### 10.2 — Development Watch Points
 
 **Performance**
 
-- Ne jamais créer d'objets dans le game loop hot path (pré-allocation)
-- Pooling обязательно pour les particules (500 max)
-- Collision lookup via Map, pas d'array scan `includes()`
+- Never create objects in the game loop hot path (pre-allocation)
+- Pooling is mandatory for particles (500 max)
+- Collision lookup via Map, no array scan `includes()`
 
 **Audio**
 
-- Tester sur navigateurs variés (Safari a parfois des quirks Web Audio)
-- Prévoir fallback silencieux si `AudioContext` non supporté
-- Gérer le cas où l'utilisateur mute via les raccourcis système
+- Test on various browsers (Safari sometimes has Web Audio quirks)
+- Provide silent fallback if `AudioContext` not supported
+- Handle cases where user mutes via system shortcuts
 
 **Responsive**
 
-- Tester sur viewport 320px minimum
-- Canvas resize doit préserver le game state
-- Touch controls ne doivent pas interférer avec scroll naturel
+- Test on 320px minimum viewport
+- Canvas resize must preserve game state
+- Touch controls must not interfere with natural scroll
 
-**Persist**
+**Persistence**
 
-- Schema versioning pour migrations futures
-- Validation systématique des données lues depuis localStorage
-- Prévoir export/import CSV pour transfer de scores
+- Schema versioning for future migrations
+- Systematic validation of data read from localStorage
+- Provide CSV export/import for score transfer
 
-### 10.3 — Définitions
+### 10.3 — Definitions
 
-| Terme | Définition |
+| Term | Definition |
 |-------|-----------|
-| **Tick** | Un cycle de logique jeu (mouvement serpent, collision) exécuté à intervalle fixe |
-| **Frame** | Une itération de rendu (RAF) à 60 FPS |
-| **Dirty checking** | Détection de changement d'état avant rendu |
-| **Object pool** | Pré-allocation d'objets réutilisables pour éviter l'allocation GC |
+| **Tick** | A cycle of game logic (snake movement, collision) executed at a fixed interval |
+| **Frame** | A rendering iteration (RAF) at 60 FPS |
+| **Dirty checking** | Detecting state change before rendering |
+| **Object pool** | Pre-allocation of reusable objects to avoid GC allocation |
 
-### 10.4 — Checklist qualité avant release
+### 10.4 — Quality Release Checklist
 
 ```
 PRE-RELEASE CHECKLIST
 ══════════════════════
 
-FUNCIONNALITÉ
-  □ Serpent bouge dans les 4 directions
-  □ Collision mur → game over
-  □ Collision self → game over
-  □ Makan food → score +1, serpent +1 segment
-  □ Level up tous les N points → speed increase
+FUNCTIONALITY
+  □ Snake moves in 4 directions
+  □ Wall collision → game over
+  □ Self collision → game over
+  □ Consuming food → score +1, snake +1 segment
+  □ Level up every N points → speed increase
   □ Game over → screen + restart
 
-VISUEL
-  □ Grid holographique visible
-  □ Glow néon sur serpent (tête + body)
-  □ Trail dégradé derrière serpent
-  □ Pulse sur food
-  □ Burst particules au makan food
+VISUAL
+  □ Holographic grid visible
+  □ Neon glow on snake (head + body)
+  □ Gradient trail behind snake
+  □ Pulse on food
+  □ Particle burst when consuming food
   □ Scanlines overlay
-  □ Screen shake au game over
+  □ Screen shake at game over
 
 AUDIO
-  □ SFX eat jouable
-  □ SFX die jouable
-  □ SFX levelup jouable
+  □ SFX eat playable
+  □ SFX die playable
+  □ SFX levelup playable
   □ Volume adjustable
-  □ Mute fonctionnel
+  □ Mute functional
 
 UI
-  □ Menu screen avec titre animé
-  □ HUD score/level visible pendant jeu
-  □ Game over screen avec restart
-  □ High scores sauvegardés
-  □ Settings modal fonctionnel
+  □ Menu screen with animated title
+  □ HUD score/level visible during game
+  □ Game over screen with restart
+  □ High scores saved
+  □ Settings modal functional
 
 RESPONSIVE
   □ Desktop (1024px+) : canvas 800×500
   □ Tablet (768px) : canvas 640×400
-  □ Mobile (< 768px) : canvas fullwidth + touch controls
-  □ Keyboard fonctionnel sur desktop
-  □ Touch/swipe fonctionnel sur mobile
+  □ Mobile (< 768px) : fullwidth canvas + touch controls
+  □ Keyboard functional on desktop
+  □ Touch/swipe functional on mobile
 
 PERFORMANCE
-  □ 60 FPS stable sur desktop
-  □ 30+ FPS stable sur mobile
+  □ Stable 60 FPS on desktop
+  □ Stable 30+ FPS on mobile
   □ Memory < 30 MB
   □ No console errors
-  □ No memory leak après 10 games
+  □ No memory leak after 10 games
 
-COMPATIBILITÉ
+COMPATIBILITY
   □ Chrome 80+
   □ Firefox 75+
   □ Safari 14+
@@ -769,9 +768,9 @@ COMPATIBILITÉ
 
 ---
 
-## 11. Annexes
+## 11. Appendices
 
-### A — Variables CSS (extrait)
+### A — CSS Variables (snippet)
 
 ```css
 :root {
@@ -799,7 +798,7 @@ COMPATIBILITÉ
 }
 ```
 
-### B — Table de progression (LevelService)
+### B — Progression Table (LevelService)
 
 ```javascript
 const SPEED_TABLE = [
@@ -807,4 +806,6 @@ const SPEED_TABLE = [
   { level: 2,  minScore: 50,   tickMs: 135, label: 'SLOW' },
   { level: 3,  minScore: 100,  tickMs: 120, label: 'MEDIUM' },
   { level: 4,  minScore: 200,  tickMs: 105, label: 'FAST' },
-  { level: 5,
+  { level: 5,  minScore: 400,  tickMs: 90,  label: 'INSANE' }
+];
+```

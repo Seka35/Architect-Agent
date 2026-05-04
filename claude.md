@@ -2,103 +2,103 @@
 
 ## SKILL: ARCHITECT_PRO
 
-**Trigger**: Quand l'utilisateur demande un system design, une architecture,
-ou un script complexe (>100 lignes avec plusieurs composants).
+**Trigger**: When the user asks for a system design, architecture,
+or a complex script (>100 lines with multiple components).
 
 ---
 
-## ⚙️ Setup (première utilisation ou après git clone)
+## ⚙️ Setup (first use or after git clone)
 
-Le script requiert un **environnement virtuel Python** avec ses dépendances.
-**Toujours vérifier le venv avant d'exécuter.**
+The script requires a **Python virtual environment** with its dependencies.
+**Always verify the venv before running.**
 
 ```bash
-# 1. Se placer dans le répertoire du projet
-cd ~/scripts/   # ou le chemin réel du projet
+# 1. Go to the project directory
+cd ~/scripts/   # or the actual project path
 
-# 2. Créer le venv s'il n'existe pas
+# 2. Create the venv if it doesn't exist
 if [ ! -d ".venv" ]; then
     python3 -m venv .venv
 fi
 
-# 3. Installer / mettre à jour les dépendances
+# 3. Install / update dependencies
 .venv/bin/pip install -q -r requirements.txt
 
-# 4. Vérifier que les imports critiques fonctionnent
+# 4. Verify critical imports work
 .venv/bin/python3 -c "from langgraph.checkpoint.sqlite import SqliteSaver; print('✅ SqliteSaver OK')"
 ```
 
-> ⚠️ **Ne jamais utiliser `python3` système** — toujours `.venv/bin/python3`.
-> Le Python système n'a pas les dépendances nécessaires et causera des ImportError.
+> ⚠️ **Never use system `python3`** — always use `.venv/bin/python3`.
+> The system Python does not have the required dependencies and will cause ImportErrors.
 
 ---
 
-## 🔑 Configuration du .env
+## 🔑 .env Configuration
 
-Mettre le fichier `.env` dans le **même dossier que le script** (`~/scripts/.env`).
-Le script le charge automatiquement — aucune commande `export` nécessaire.
+Place the `.env` file in the **same folder as the script** (`~/scripts/.env`).
+The script loads it automatically — no `export` command needed.
 
 ```bash
-# Créer le .env (une seule fois)
+# Create the .env (one time only)
 echo "MINIMAX_API_KEY=sk-..." > ~/scripts/.env
 ```
 
-Le script cherche le `.env` dans cet ordre :
-1. Dossier du script (`~/scripts/.env`) ← **recommandé**
-2. Dossier courant (`./env`)
+The script looks for `.env` in this order:
+1. Script folder (`~/scripts/.env`) ← **recommended**
+2. Current working directory (`./env`)
 
 ---
 
-## 🧠 Choisir le mode
+## 🧠 Choosing a Mode
 
 | Situation | Mode |
 |-----------|------|
-| Architecture complète, nouveau projet, système complexe | `full` |
-| Question rapide, composant isolé, validation d'un choix technique | `quick` |
-| Pas précisé par l'utilisateur | `full` par défaut |
+| Full architecture, new project, complex system | `full` |
+| Quick question, isolated component, validating a tech choice | `quick` |
+| Not specified by the user | `full` by default |
 
 ---
 
-## 📋 Étapes d'exécution
+## 📋 Execution Steps
 
-1. **Vérifier le venv** (voir Setup ci-dessus) — obligatoire avant chaque run.
+1. **Verify the venv** (see Setup above) — mandatory before every run.
 
-2. **Extraire** `input_task` (demande reformulée clairement) et `context`
-   (stack, contraintes, scale, environnement) depuis le message utilisateur.
+2. **Extract** `input_task` (clearly reformulated request) and `context`
+   (stack, constraints, scale, environment) from the user's message.
 
-3. **Choisir le mode** selon le tableau ci-dessus.
+3. **Choose the mode** based on the table above.
 
-4. **Construire le payload JSON** :
+4. **Build the JSON payload**:
 
    ```json
    {
-     "input_task": "description précise et complète",
-     "context": "stack technique, contraintes, environnement de déploiement",
+     "input_task": "precise and complete description",
+     "context": "tech stack, constraints, deployment environment",
      "mode": "full"
    }
    ```
 
-5. **Exécuter avec le venv** :
+5. **Run with the venv**:
 
    ```bash
    echo '$JSON' | .venv/bin/python3 ~/scripts/architect_agent.py
    ```
 
-6. **Interpréter le résultat** :
-   - `review_score >= 80` → Présenter `final_output` directement
-   - `review_score 60–79` → Présenter avec les warnings du champ `review`
-   - `review_score < 60`  → Demander guidance manuelle à l'utilisateur
-   - `iterations >= 3`    → Signaler que des arbitrages manuels sont nécessaires
+6. **Interpret the result**:
+   - `review_score >= 80` → Present `final_output` directly
+   - `review_score 60–79` → Present with warnings from the `review` field
+   - `review_score < 60`  → Ask the user for manual guidance
+   - `iterations >= 3`    → Signal that manual trade-offs are needed
 
-7. **Toujours afficher** : score final, mode utilisé, nombre d'itérations, stack recommandée.
+7. **Always display**: final score, mode used, iteration count, recommended stack.
 
-8. **Sauvegarder le `thread_id`** retourné — permet de reprendre le run si besoin.
+8. **Save the returned `thread_id`** — allows resuming the run if needed.
 
 ---
 
-## 🔁 Reprendre un run existant
+## 🔁 Resuming an Existing Run
 
-Si l'utilisateur fournit un `thread_id` :
+If the user provides a `thread_id`:
 
 ```bash
 echo '{"input_task": "...", "context": "...", "thread_id": "abc-123"}' | .venv/bin/python3 ~/scripts/architect_agent.py
@@ -106,19 +106,19 @@ echo '{"input_task": "...", "context": "...", "thread_id": "abc-123"}' | .venv/b
 
 ---
 
-## 🚫 Ne pas utiliser cette skill si
+## 🚫 Do NOT Use This Skill If
 
-- La demande est un snippet simple ou une fonction isolée (<50 lignes)
-- L'utilisateur demande juste une explication théorique
-- Le fichier `architect_agent.py` est absent du répertoire projet
+- The request is a simple snippet or isolated function (<50 lines)
+- The user is asking for a theoretical explanation only
+- The `architect_agent.py` file is missing from the project directory
 
 ---
 
-## 🐛 Dépannage
+## 🐛 Troubleshooting
 
-| Erreur | Cause | Solution |
-|--------|-------|----------|
-| `ModuleNotFoundError: langgraph` | Python système utilisé | Utiliser `.venv/bin/python3` |
-| `ImportError: langgraph.checkpoint.sqlite` | Dépendance manquante | `.venv/bin/pip install langgraph-checkpoint-sqlite` |
-| `MINIMAX_API_KEY manquante` | `.env` absent ou non chargé | `export $(cat .env \| xargs)` avant d'exécuter |
-| `⚠️ Mode MemorySaver` | sqlite checkpoint non installé | `.venv/bin/pip install langgraph-checkpoint-sqlite` |
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `ModuleNotFoundError: langgraph` | System Python used | Use `.venv/bin/python3` |
+| `ImportError: langgraph.checkpoint.sqlite` | Missing dependency | `.venv/bin/pip install langgraph-checkpoint-sqlite` |
+| `MINIMAX_API_KEY missing` | `.env` absent or not loaded | Create `.env` with `MINIMAX_API_KEY=sk-...` |
+| `⚠️ MemorySaver mode` | sqlite checkpoint not installed | `.venv/bin/pip install langgraph-checkpoint-sqlite` |

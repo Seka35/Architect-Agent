@@ -5,15 +5,15 @@
 ![MiniMax](https://img.shields.io/badge/MiniMax-M2.7-red)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**Système multi-agents de production pour la conception et l'audit automatisé d'architectures techniques.**
+**Production-grade multi-agent system for automated technical architecture design and review.**
 
-Architect-Agent Pro n'est pas un simple wrapper d'IA. C'est une **State Machine** sophistiquée qui orchestre 5 rôles spécialisés en boucle de réflexion cyclique — chaque architecture produite est planifiée, critiquée et corrigée automatiquement avant d'être livrée.
+Architect-Agent Pro is not just an AI wrapper. It's a sophisticated **State Machine** that orchestrates 5 specialized roles in a cyclic reflection loop — every architecture produced is planned, critiqued, and corrected automatically before delivery.
 
 ---
 
 ## 🔄 Workflow
 
-### Mode `full` (défaut)
+### `full` mode (default)
 
 ```
 input_task
@@ -33,7 +33,7 @@ input_task
                                    final_output
 ```
 
-### Mode `quick`
+### `quick` mode
 
 ```
 input_task
@@ -46,39 +46,39 @@ input_task
                                     final_output
 ```
 
-| Mode | Nodes | Boucle | Durée estimée | Usage |
-|------|-------|--------|---------------|-------|
-| `full` | 5 | review/refine max 3x | ~2-3 min | Architectures complexes |
-| `quick` | 3 | aucune, une seule passe | ~30 sec | Questions rapides |
+| Mode | Nodes | Loop | Est. Duration | Use Case |
+|------|-------|------|---------------|----------|
+| `full` | 5 | review/refine up to 3x | ~2-3 min | Complex architectures |
+| `quick` | 3 | none, single pass | ~30 sec | Quick questions |
 
-### Les 5 nœuds
+### The 5 nodes
 
-| Nœud | Mode | Rôle | Output |
+| Node | Mode | Role | Output |
 |------|------|------|--------|
-| 🗺️ **Planner** | full | Analyse la tâche, définit stack & contraintes, identifie les risques | Plan JSON structuré |
-| ⚙️ **Generator** | full + quick | Produit l'architecture complète (diagramme ASCII, patterns, arborescence) | Draft Markdown |
-| 🔍 **Reviewer** | full + quick | Audit sur 5 dimensions avec score 0–100 | JSON PASSED / FAILED |
-| 🔧 **Refiner** | full | Corrige les issues bloquantes, annote les changements `[CORRIGÉ]` | Draft révisé |
-| 📄 **Finalizer** | full + quick | Formate le document de référence final en 10 sections | Document livrable |
+| 🗺️ **Planner** | full | Analyzes task, defines stack & constraints, identifies risks | Structured JSON plan |
+| ⚙️ **Generator** | full + quick | Produces full architecture (ASCII diagram, patterns, file tree) | Markdown draft |
+| 🔍 **Reviewer** | full + quick | Audit across 5 dimensions with score 0–100 | JSON PASSED / FAILED |
+| 🔧 **Refiner** | full | Fixes blocking issues, annotates changes `[FIXED]` | Revised draft |
+| 📄 **Finalizer** | full + quick | Formats the final reference document in 10 sections | Deliverable document |
 
 ---
 
-## ✨ Caractéristiques techniques
+## ✨ Technical Features
 
-- **LLM : MiniMax-M2.7** — via API OpenAI-compatible (`https://api.minimaxi.chat/v1`)
-- **Deux modes** — `full` pour les architectures complexes, `quick` pour les réponses rapides
-- **Persistance SQLite** — `SqliteSaver` sauvegarde chaque état. Reprenez n'importe quelle session avec son `thread_id`
-- **JSON robuste** — Parser 4 étapes (direct → strip backticks → regex `{.*}` → ValueError avec debug)
-- **Historique inter-itérations** — Le Generator voit les drafts et reviews précédents pour progresser, pas juste réécrire
-- **Interface CLI universelle** — STDIN/STDOUT JSON, compatible avec tout pipeline CI/CD, Claude Code ou script shell
-- **Logging structuré** — Tous les logs partent sur `stderr`, l'output JSON propre sur `stdout`
+- **LLM: MiniMax-M2.7** — via OpenAI-compatible API (`https://api.minimaxi.chat/v1`)
+- **Two modes** — `full` for complex architectures, `quick` for rapid responses
+- **SQLite persistence** — `SqliteSaver` saves every state. Resume any session using its `thread_id`
+- **Robust JSON parsing** — 4-step parser (direct → strip backticks → `{.*}` regex → ValueError with debug)
+- **Cross-iteration history** — Generator sees previous drafts and reviews to improve, not just rewrite
+- **Universal CLI interface** — STDIN/STDOUT JSON, compatible with any CI/CD pipeline, Claude Code, or shell script
+- **Structured logging** — All logs go to `stderr`, clean JSON output to `stdout`
 
 ---
 
-## 📋 Prérequis
+## 📋 Prerequisites
 
 - Python 3.11+
-- Clé API MiniMax — [Obtenir une clé API MiniMax](https://platform.minimax.io/subscribe/token-plan?code=CFCvBqd627)
+- MiniMax API key — [Get a MiniMax API key](https://platform.minimax.io/subscribe/token-plan?code=CFCvBqd627)
 
 ---
 
@@ -94,17 +94,17 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Configuration `.env`
+### `.env` Configuration
 
-Créez un fichier `.env` dans le dossier du projet — **le script le charge automatiquement**, aucun `export` nécessaire :
+Create a `.env` file in the project folder — **the script loads it automatically**, no `export` needed:
 
 ```bash
 cp .env.exemple .env
-# Éditez .env et renseignez votre clé
-echo "MINIMAX_API_KEY=sk-votre-clé-ici" > .env
+# Edit .env and fill in your key
+echo "MINIMAX_API_KEY=sk-your-key-here" > .env
 ```
 
-Obtenez votre clé API : [MiniMax API](https://platform.minimax.io/subscribe/token-plan?code=CFCvBqd627)
+Get your API key: [MiniMax API](https://platform.minimax.io/subscribe/token-plan?code=CFCvBqd627)
 
 **requirements.txt**
 
@@ -117,47 +117,47 @@ python-dotenv>=1.0.0
 
 ---
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-### Mode full — architecture complète
+### Full mode — complete architecture
 
 ```bash
 echo '{
-  "input_task": "Architecture microservices Prime Circle",
+  "input_task": "Microservices architecture for an e-commerce platform",
   "context": "Node.js, PostgreSQL, Kubernetes, 10k users"
-}' | python3 architect_agent.py
+}' | .venv/bin/python3 architect_agent.py
 ```
 
-### Mode quick — réponse rapide
+### Quick mode — fast answer
 
 ```bash
 echo '{
-  "input_task": "Structure Redis pour cache de sessions",
+  "input_task": "Redis structure for session caching",
   "mode": "quick"
-}' | python3 architect_agent.py
+}' | .venv/bin/python3 architect_agent.py
 ```
 
-### Reprendre un run existant
+### Resume an existing run
 
 ```bash
 echo '{
   "input_task": "...",
   "context": "...",
   "thread_id": "a1b2c3d4-..."
-}' | python3 architect_agent.py
+}' | .venv/bin/python3 architect_agent.py
 ```
 
 ---
 
-## 📤 Output JSON
+## 📤 JSON Output
 
 ```json
 {
   "thread_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
   "mode": "full",
   "plan": {
-    "system_type": "API REST microservices",
-    "scale": "PME, 10k utilisateurs actifs",
+    "system_type": "REST API microservices",
+    "scale": "SMB, 10k active users",
     "key_components": ["API Gateway", "Auth Service", "Task Service", "PostgreSQL", "Redis"],
     "recommended_stack": {
       "frontend": "React",
@@ -165,9 +165,9 @@ echo '{
       "database": "PostgreSQL + Redis",
       "infra": "Kubernetes / Helm"
     },
-    "risks": ["Contention DB multi-tenant", "Gestion des secrets en CI/CD"]
+    "risks": ["Multi-tenant DB contention", "Secrets management in CI/CD"]
   },
-  "final_output": "# DOCUMENT D'ARCHITECTURE TECHNIQUE\n## 1. Résumé Exécutif\n...",
+  "final_output": "# TECHNICAL ARCHITECTURE DOCUMENT\n## 1. Executive Summary\n...",
   "review_score": 87,
   "iterations": 2,
   "status": "PASSED"
@@ -176,25 +176,25 @@ echo '{
 
 ---
 
-## 📄 Exemple de document généré
+## 📄 Example Generated Document
 
-Voici un exemple réel de document produit par l'agent pour la tâche :
-> *"Créer un jeu Snake version futuriste — HTML/CSS/JS vanilla, esthétique cyberpunk/néon"*
+Here is a real example of a document produced by the agent for the task:
+> *"Create a futuristic Snake game — HTML/CSS/JS vanilla, cyberpunk/neon aesthetic"*
 
-📎 **[Voir le document complet → examples/snake_futuriste.md](examples/snake_futuriste.md)**
+📎 **[View full document → examples/snake_futuriste.md](examples/snake_futuriste.md)**
 
-Le document généré contient :
-- **Résumé exécutif** — vue d'ensemble en quelques lignes
-- **Architecture visuelle** — diagramme ASCII du pipeline de rendu multi-canvas
-- **Composants détaillés** — GameState, SnakeRenderer, ParticleSystem, AudioSystem, etc.
-- **Stack technologique justifiée** — HTML5 Canvas, Web Audio API, localStorage
-- **Flux de données** — boucle de jeu, input → physics → render
-- **Scalabilité & Performance** — object pool, requestAnimationFrame, devicePixelRatio
-- **Arborescence du projet** — structure de fichiers complète (~20 fichiers JS)
-- **Roadmap en 5 phases** — 10 jours de développement détaillés
-- **Analyse des risques** — tableau probabilité/impact/mitigation
+The generated document includes:
+- **Executive summary** — high-level overview in a few lines
+- **Visual architecture** — ASCII diagram of the multi-canvas rendering pipeline
+- **Detailed components** — GameState, SnakeRenderer, ParticleSystem, AudioSystem, etc.
+- **Justified tech stack** — HTML5 Canvas, Web Audio API, localStorage
+- **Data flows** — game loop, input → physics → render
+- **Scalability & Performance** — object pool, requestAnimationFrame, devicePixelRatio
+- **Project file tree** — complete structure (~20 JS files)
+- **5-phase roadmap** — detailed 10-day development plan
+- **Risk analysis** — probability/impact/mitigation table
 
-> Score qualité : **87/100** — Status : **PASSED** — 1 itération (mode `quick`)
+> Quality score: **87/100** — Status: **PASSED** — 1 iteration (`quick` mode)
 
 ---
 
@@ -202,72 +202,72 @@ Le document généré contient :
 
 ```python
 class AgentState(TypedDict):
-    input_task: str        # Tâche initiale
-    context: str           # Stack, contraintes, environnement
-    plan: str              # Plan JSON du Planner (vide en mode quick)
-    draft: str             # Dernière architecture générée
-    review: dict           # Résultat structuré du Reviewer
-    refined_draft: str     # Draft post-Refiner (mode full uniquement)
-    final_output: str      # Document final livrable
-    iteration: int         # Compteur de cycles
-    history: list          # Historique drafts + reviews
-    error: Optional[str]   # Erreur éventuelle
+    input_task: str        # Initial task
+    context: str           # Stack, constraints, environment
+    plan: str              # Planner JSON plan (empty in quick mode)
+    draft: str             # Latest generated architecture
+    review: dict           # Structured Reviewer result
+    refined_draft: str     # Post-Refiner draft (full mode only)
+    final_output: str      # Final deliverable document
+    iteration: int         # Cycle counter
+    history: list          # Drafts + reviews history
+    error: Optional[str]   # Optional error
 ```
 
 ---
 
-## 🛡️ Ce que le Reviewer détecte
+## 🛡️ What the Reviewer Detects
 
-| Dimension | Exemples d'issues détectées |
-|-----------|----------------------------|
-| **Sécurité** | Secrets en clair, surface réseau exposée, RBAC manquant |
-| **Performance** | Absence de cache, N+1 queries, pas de pagination |
-| **Scalabilité** | SPOF, couplage fort, pas de queue async |
-| **Maintenabilité** | Absence de tests, couplage logique métier/infra |
-| **Complétude** | Sections manquantes, flux non documentés |
+| Dimension | Example issues detected |
+|-----------|------------------------|
+| **Security** | Secrets in plain text, exposed network surface, missing RBAC |
+| **Performance** | Missing cache, N+1 queries, no pagination |
+| **Scalability** | SPOF, tight coupling, no async queue |
+| **Maintainability** | No tests, mixed business logic and infra |
+| **Completeness** | Missing sections, undocumented flows |
 
 ---
 
-## 🔧 Intégration Claude Code (CLAUDE.md)
+## 🔧 Claude Code Integration (CLAUDE.md)
 
-Le fichier `claude.md` à la racine du projet instruit automatiquement Claude Code sur comment utiliser l'agent.
+The `claude.md` file at the project root automatically instructs Claude Code on how to use the agent.
 
-**Ce que Claude Code fait automatiquement :**
-1. Vérifie/crée le `.venv` avec toutes les dépendances
-2. Utilise toujours `.venv/bin/python3` (jamais `python3` système)
-3. Charge le `.env` automatiquement (aucun `export` nécessaire)
-4. Choisit le mode `full` ou `quick` selon la complexité de la demande
-5. Affiche le score, mode, itérations et stack recommandée
+**What Claude Code does automatically:**
+1. Checks/creates the `.venv` with all dependencies
+2. Always uses `.venv/bin/python3` (never system `python3`)
+3. Loads `.env` automatically (no `export` needed)
+4. Picks `full` or `quick` mode based on request complexity
+5. Displays score, mode, iterations, and recommended stack
 
 ```bash
-# Mode full (défaut) — architecture complexe
+# Full mode (default) — complex architecture
 echo '{"input_task": "...", "context": "..."}' | .venv/bin/python3 architect_agent.py
 
-# Mode quick — question rapide
+# Quick mode — fast question
 echo '{"input_task": "...", "mode": "quick"}' | .venv/bin/python3 architect_agent.py
 ```
 
-| Score | Comportement de Claude Code |
-|-------|-----------------------------|
-| ≥ 80  | Présente `final_output` directement |
-| 60–79 | Présente avec les warnings du champ `review` |
-| < 60  | Demande guidance manuelle à l'utilisateur |
-| iter ≥ 3 | Signale que des arbitrages manuels sont nécessaires |
+| Score | Claude Code Behavior |
+|-------|---------------------|
+| ≥ 80  | Presents `final_output` directly |
+| 60–79 | Presents with warnings from `review` field |
+| < 60  | Asks user for manual guidance |
+| iter ≥ 3 | Signals that manual trade-offs are needed |
 
 ---
 
-## 📁 Structure du projet
+## 📁 Project Structure
 
 ```
 Architect-Agent/
-├── architect_agent.py   # Agent principal
-├── requirements.txt     # Dépendances Python
-├── .env.exemple         # Template variables d'environnement
-├── .env                 # Votre clé API (non versionné)
-├── examples/            # Exemples de documents générés
+├── architect_agent.py   # Main agent
+├── requirements.txt     # Python dependencies
+├── .env.exemple         # Environment variable template
+├── .env                 # Your API key (not versioned)
+├── examples/            # Sample generated documents
 │   └── snake_futuriste.md
 ├── .gitignore
-├── claude.md            # Instructions pour Claude Code
+├── claude.md            # Instructions for Claude Code
 └── README.md
 ```
 
@@ -276,13 +276,13 @@ Architect-Agent/
 ```
 .env
 architect_runs.db
-venv/
+.venv/
 __pycache__/
 *.pyc
 ```
 
 ---
 
-## 📜 Licence
+## 📜 License
 
-MIT — voir [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
