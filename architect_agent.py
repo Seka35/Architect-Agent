@@ -93,7 +93,9 @@ CHECKPOINT_DB = "architect_runs.db"
 
 # ─── Helper LLM call ────────────────────────────────────────────────────────
 def llm(system: str, messages: list, max_tokens: int = 4096) -> str:
-    """Appel MiniMax via OpenAI-compatible API."""
+    """Appel MiniMax via OpenAI-compatible API.
+    Strip automatiquement les balises <think>...</think> des modèles reasoning (M2.x).
+    """
     response = client.chat.completions.create(
         model=MODEL,
         max_tokens=max_tokens,
@@ -102,7 +104,10 @@ def llm(system: str, messages: list, max_tokens: int = 4096) -> str:
             *messages
         ]
     )
-    return response.choices[0].message.content
+    content = response.choices[0].message.content
+    # Strip les balises <think>...</think> (MiniMax-M2.x reasoning model)
+    content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+    return content
 
 
 def llm_json(system: str, messages: list, max_tokens: int = 2048) -> dict:

@@ -1,5 +1,3 @@
-<think>L'utilisateur me demande de produire le document d'architecture technique final basé sur le plan et l'architecture finale qu'il a partagés. Je dois créer un document complet et professionnel structuré selon le format demandé.
-</think>
 
 # DOCUMENT D'ARCHITECTURE TECHNIQUE
 

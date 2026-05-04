@@ -230,20 +230,29 @@ class AgentState(TypedDict):
 
 ## 🔧 Intégration Claude Code (CLAUDE.md)
 
-```markdown
-## SKILL: ARCHITECT_PRO
+Le fichier `claude.md` à la racine du projet instruit automatiquement Claude Code sur comment utiliser l'agent.
 
-**Trigger**: System design, architecture, script complexe (>100 lignes, multi-composants)
-**Script**: ~/scripts/architect_agent.py
+**Ce que Claude Code fait automatiquement :**
+1. Vérifie/crée le `.venv` avec toutes les dépendances
+2. Utilise toujours `.venv/bin/python3` (jamais `python3` système)
+3. Charge le `.env` automatiquement (aucun `export` nécessaire)
+4. Choisit le mode `full` ou `quick` selon la complexité de la demande
+5. Affiche le score, mode, itérations et stack recommandée
 
-1. Extraire `input_task` et `context` du message utilisateur
-2. Choisir le mode : `quick` pour questions simples, `full` pour architectures complexes
-3. Construire le payload JSON et piper vers le script
-4. review_score >= 80 → présenter final_output directement
-   review_score 60-79 → présenter avec warnings du champ review
-   review_score < 60  → demander guidance manuelle
-   iterations >= 3    → signaler arbitrages manuels nécessaires
+```bash
+# Mode full (défaut) — architecture complexe
+echo '{"input_task": "...", "context": "..."}' | .venv/bin/python3 architect_agent.py
+
+# Mode quick — question rapide
+echo '{"input_task": "...", "mode": "quick"}' | .venv/bin/python3 architect_agent.py
 ```
+
+| Score | Comportement de Claude Code |
+|-------|-----------------------------|
+| ≥ 80  | Présente `final_output` directement |
+| 60–79 | Présente avec les warnings du champ `review` |
+| < 60  | Demande guidance manuelle à l'utilisateur |
+| iter ≥ 3 | Signale que des arbitrages manuels sont nécessaires |
 
 ---
 
