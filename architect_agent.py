@@ -14,6 +14,7 @@ import logging
 import uuid
 import os
 import re
+from pathlib import Path
 from typing import TypedDict, Optional
 from langgraph.graph import StateGraph, END
 try:
@@ -38,10 +39,34 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+# ─── Chargement automatique du .env ─────────────────────────────────────────
+# Cherche .env dans le dossier du script d'abord, puis dans le dossier courant
+_script_dir = Path(__file__).resolve().parent
+_env_candidates = [_script_dir / ".env", Path.cwd() / ".env"]
+try:
+    from dotenv import load_dotenv
+    for _env_path in _env_candidates:
+        if _env_path.exists():
+            load_dotenv(_env_path)
+            log.info(f"📄 .env chargé depuis : {_env_path}")
+            break
+except ImportError:
+    # python-dotenv non installé — fallback sur variables d'environnement système
+    for _env_path in _env_candidates:
+        if _env_path.exists():
+            with open(_env_path) as _f:
+                for _line in _f:
+                    _line = _line.strip()
+                    if _line and not _line.startswith("#") and "=" in _line:
+                        _k, _v = _line.split("=", 1)
+                        os.environ.setdefault(_k.strip(), _v.strip())
+            log.info(f"📄 .env chargé manuellement depuis : {_env_path}")
+            break
+
 # ─── Client MiniMax ─────────────────────────────────────────────────────────
 MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY")
 if not MINIMAX_API_KEY:
-    log.error("❌ Variable d'environnement MINIMAX_API_KEY manquante")
+    log.error("❌ MINIMAX_API_KEY manquante. Créez un fichier .env avec : MINIMAX_API_KEY=sk-...")
     sys.exit(1)
 
 client = OpenAI(

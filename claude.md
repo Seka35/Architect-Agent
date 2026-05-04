@@ -33,6 +33,22 @@ fi
 
 ---
 
+## 🔑 Configuration du .env
+
+Mettre le fichier `.env` dans le **même dossier que le script** (`~/scripts/.env`).
+Le script le charge automatiquement — aucune commande `export` nécessaire.
+
+```bash
+# Créer le .env (une seule fois)
+echo "MINIMAX_API_KEY=sk-..." > ~/scripts/.env
+```
+
+Le script cherche le `.env` dans cet ordre :
+1. Dossier du script (`~/scripts/.env`) ← **recommandé**
+2. Dossier courant (`./env`)
+
+---
+
 ## 🧠 Choisir le mode
 
 | Situation | Mode |
