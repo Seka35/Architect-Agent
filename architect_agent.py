@@ -70,18 +70,25 @@ def llm(system: str, messages: list, max_tokens: int = 4096) -> str:
 
 
 def llm_json(system: str, messages: list, max_tokens: int = 2048) -> dict:
-    """Appel MiniMax avec output JSON parsé — 4 étapes de nettoyage."""
+    """Appel MiniMax avec output JSON parsé — 5 étapes de nettoyage.
+    MiniMax-M2.7 est un modèle 'thinking' qui wrape sa réflexion dans
+    des balises <think>...</think> avant le JSON — on les strip en priorité.
+    """
     system_with_json = system + "\n\nRéponds UNIQUEMENT avec du JSON valide, sans markdown, sans backticks, sans texte avant ou après."
     raw = llm(system_with_json, messages, max_tokens)
 
-    # Étape 1 : tentative directe
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        pass
+    # Étape 0 : strip les balises <think>...</think> (modèles reasoning MiniMax-M2.x)
+    cleaned_think = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+
+    # Étape 1 : tentative directe (après strip <think>)
+    for candidate in [cleaned_think, raw]:
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            pass
 
     # Étape 2 : strip les backticks markdown (```json ... ``` ou ``` ... ```)
-    cleaned = re.sub(r"```(?:json)?\s*|\s*```", "", raw).strip()
+    cleaned = re.sub(r"```(?:json)?\s*|\s*```", "", cleaned_think).strip()
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError:
