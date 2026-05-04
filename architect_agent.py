@@ -16,7 +16,18 @@ import os
 import re
 from typing import TypedDict, Optional
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.sqlite import SqliteSaver
+try:
+    from langgraph.checkpoint.sqlite import SqliteSaver
+    _CHECKPOINTER = "sqlite"
+except ImportError:
+    from langgraph.checkpoint.memory import MemorySaver
+    _CHECKPOINTER = "memory"
+    import warnings
+    warnings.warn(
+        "langgraph-checkpoint-sqlite non installé — persistance désactivée (MemorySaver). "
+        "Installez : pip install langgraph-checkpoint-sqlite",
+        stacklevel=2
+    )
 from openai import OpenAI
 
 # ─── Logging ────────────────────────────────────────────────────────────────
@@ -487,7 +498,14 @@ if __name__ == "__main__":
         log.info(f"🚀 Démarrage — Task: {task_data['input_task'][:80]}...")
         log.info(f"🤖 Modèle: {MODEL} via MiniMax API")
 
-        with SqliteSaver.from_conn_string(CHECKPOINT_DB) as checkpointer:
+        if _CHECKPOINTER == "sqlite":
+            with SqliteSaver.from_conn_string(CHECKPOINT_DB) as checkpointer:
+                app = build_graph(checkpointer=checkpointer, mode=mode)
+                config = {"configurable": {"thread_id": thread_id}}
+                result = app.invoke(task_data, config=config)
+        else:
+            log.warning("⚠️  Mode MemorySaver — pas de persistance entre sessions (thread_id ignoré)")
+            checkpointer = MemorySaver()
             app = build_graph(checkpointer=checkpointer, mode=mode)
             config = {"configurable": {"thread_id": thread_id}}
             result = app.invoke(task_data, config=config)
