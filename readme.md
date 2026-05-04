@@ -78,15 +78,15 @@ input_task
 ## 📋 Prérequis
 
 - Python 3.11+
-- Clé API MiniMax — [https://api.minimaxi.chat](https://api.minimaxi.chat)
+- Clé API MiniMax — [Obtenir une clé API MiniMax](https://platform.minimax.io/subscribe/token-plan?code=CFCvBqd627)
 
 ---
 
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/Seka35/architect-agent-pro.git
-cd architect-agent-pro
+git clone https://github.com/Seka35/Architect-Agent.git
+cd Architect-Agent
 
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
